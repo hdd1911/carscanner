@@ -1,0 +1,38 @@
+{
+    "extends": ["react-app", "plugin:prettier/recommended"],
+    "rules": {
+        "prettier/prettier": "warn",
+        "sort-imports": [
+            "warn",
+            { "ignoreCase": true, "ignoreDeclarationSort": true }
+        ],
+        "import/order": [
+            "warn",
+            {
+                "groups": [
+                    ["external", "builtin"],
+                    "internal",
+                    ["sibling", "parent"],
+                    "index"
+                  ],
+                "pathGroups": [
+                    {
+                        "pattern": "@(react|react-native)",
+                        "group": "external",
+                        "position": "before"
+                    },
+                    {
+                        "pattern": "@src/**",
+                        "group": "internal"
+                    }
+                ],
+                "pathGroupsExcludedImportTypes": ["internal", "react"],
+                "newlines-between": "always",
+                "alphabetize": {
+                    "order": "asc",
+                    "caseInsensitive": true
+                }
+            }
+        ]
+    }
+}
