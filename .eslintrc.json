@@ -1,7 +1,10 @@
 {
     "extends": ["react-app", "plugin:prettier/recommended"],
     "rules": {
-        "prettier/prettier": "warn",
+        "prettier/prettier": [
+            "warn",
+            { "endOfLine": "auto" }
+        ],
         "sort-imports": [
             "warn",
             { "ignoreCase": true, "ignoreDeclarationSort": true }
