@@ -1,26 +1,32 @@
 import React from 'react';
 
 import { ITEMS_PER_PAGE } from '../constants';
+import useIntersection from '../hooks/intersection';
 import { useAppSelector } from '../hooks/store';
-import useOnScreen from '../hooks/useOnScreen';
 import { Car, useLazyGetCarsQuery } from '../services/searcher';
 
 const InfiniteList: React.FC = () => {
     const { selectedModel } = useAppSelector(state => state.app);
-    const [getCars, { isLoading, data }] = useLazyGetCarsQuery();
+    const [getCars, { data, isFetching }] = useLazyGetCarsQuery();
 
     const [list, setList] = React.useState<Car[]>([]);
     const [listCompleted, setListCompleted] = React.useState<boolean>(true);
 
     const pageRef = React.useRef<number>(0);
 
-    const loadMore = React.useCallback(() => {
-        getCars({
-            page: ++pageRef.current,
+    const bottomRef = React.useRef<HTMLDivElement | null>(null);
+    const isVisible = useIntersection(bottomRef);
+
+    const loadMore = React.useCallback(async () => {
+        pageRef.current += 1;
+        const response = await getCars({
+            page: pageRef.current,
             per_page: ITEMS_PER_PAGE,
             filter: { catalog: [{ model_id: [selectedModel?.id] }] },
         });
-    }, [getCars, selectedModel?.id]);
+        const extraItems = response.data?.results;
+        if (extraItems) setList(prevState => [...prevState, ...extraItems]);
+    }, [getCars, selectedModel]);
 
     React.useEffect(() => {
         if (selectedModel) {
@@ -32,24 +38,15 @@ const InfiniteList: React.FC = () => {
     }, [loadMore, selectedModel]);
 
     React.useEffect(() => {
-        const extraItems = data?.results;
         const totalItems = data?.total;
+        const loadedItems = pageRef.current * ITEMS_PER_PAGE;
 
-        if (extraItems) {
-            setList(prevState => prevState.concat(extraItems));
-        }
-
-        if (totalItems && pageRef.current * ITEMS_PER_PAGE >= totalItems) {
+        if (totalItems && loadedItems >= totalItems) {
             setListCompleted(true);
         }
     }, [data]);
 
-    const testRef = React.useRef<HTMLDivElement | null>(null);
-
-    const isVisible = useOnScreen(testRef);
-
     React.useEffect(() => {
-        console.log(`is visible >>>>> ${!!(isVisible)}`);
         if (isVisible) loadMore();
     }, [isVisible, loadMore]);
 
@@ -65,16 +62,12 @@ const InfiniteList: React.FC = () => {
         >
             <ul>
                 {list?.map((item: Car) => (
-                    <li key={item.id}>
-                        {item.id} {item.title}
+                    <li key={item.id} style={{ minHeight: 40 }}>
+                        {item.title} {item.price}
                     </li>
                 ))}
             </ul>
-            {!listCompleted && (
-                <div ref={testRef}>
-                    <button onClick={loadMore}>Загрузить еще</button>
-                </div>
-            )}
+            {!listCompleted && !isFetching && <div ref={bottomRef}></div>}
         </div>
     );
 };

@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface AppState {
+    searchValue: string;
     searchHistory: HistoryItem[];
     selectedModel: SelectedModel | null;
 }
@@ -14,6 +15,7 @@ interface HistoryItem {
 }
 
 const initialState: AppState = {
+    searchValue: '',
     searchHistory: [],
     selectedModel: null,
 };
@@ -22,6 +24,9 @@ export const appSlice = createSlice({
     name: 'app',
     initialState,
     reducers: {
+        setSearchValue(state, action: PayloadAction<AppState['searchValue']>) {
+            state.searchValue = action.payload;
+        },
         addHistoryItem(state, action: PayloadAction<HistoryItem>) {
             const history = state.searchHistory;
             const newItem = action.payload;

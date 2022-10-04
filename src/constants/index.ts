@@ -1,6 +1,7 @@
-export const DEFAULT_SEARCH_DEBOUNCE = 300;
+export const DEFAULT_SEARCH_DEBOUNCE = 500;
+export const ITEMS_PER_PAGE = 10;
 
-export const ITEMS_PER_PAGE = 20;
+export const COLOR_HIGHLIGHTED_TEXT = '#7dd5a8';
 
 export const SEARCHER_API = {
     BASE_URL: 'https://api.sberauto.com/searcher/',
