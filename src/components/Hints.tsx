@@ -1,15 +1,24 @@
 import React from 'react';
 
+import { Box, List, ListItem, Typography } from '@mui/material';
 import { useDispatch } from 'react-redux';
 
 import useDebounce from '../hooks/debounce';
 import { useAppActions, useAppSelector } from '../hooks/store';
-import { Hint, searcherApi, useLazySuggestHintsQuery } from '../services/searcher';
+import { searcherApi, useLazySuggestHintsQuery } from '../services/searcher';
+import { Hint } from '../services/searcher.models';
 import HighlightedText from './HighlightedText';
+import { styles } from './Hints.styles';
 
 const Hints: React.FC = () => {
     const { searchValue } = useAppSelector(state => state.app);
-    const { addHistoryItem, setSelectedModel, setSearchValue } = useAppActions();
+    const {
+        addHistoryItem,
+        setSelectedModel,
+        setSearchValue,
+        setHintsVisible,
+        setSearchPlaceholder,
+    } = useAppActions();
     const [suggestHints, { data: hints }] = useLazySuggestHintsQuery();
 
     const dispatch = useDispatch();
@@ -18,15 +27,17 @@ const Hints: React.FC = () => {
     const onHintClickHandler = React.useCallback(
         (hint: Hint) => {
             addHistoryItem({ title: hint.title });
+            setSearchPlaceholder(hint.title);
 
             if (hint.model_id === 0) {
                 setSearchValue(hint.title);
-                suggestHints({ text: hint.title }); // мб нужно будет убрать
             } else {
                 setSelectedModel({ id: hint.model_id });
+                setHintsVisible(false);
+                setSearchValue('');
             }
         },
-        [addHistoryItem, setSearchValue, setSelectedModel, suggestHints],
+        [addHistoryItem, setHintsVisible, setSearchPlaceholder, setSearchValue, setSelectedModel],
     );
 
     React.useEffect(() => {
@@ -40,27 +51,29 @@ const Hints: React.FC = () => {
         }
     }, [debounsed, dispatch, suggestHints]);
 
+    if (!hints?.length)
+        return (
+            <Typography sx={styles.noDataTitle} variant="subtitle1">
+                Нет данных
+            </Typography>
+        );
+
     return (
-        <div
-            style={{
-                height: 300,
-                width: 'auto',
-                border: '1px solid red',
-                marginTop: 10,
-            }}
-        >
-            <ul>
+        <Box sx={styles.containerBox}>
+            <List>
                 {hints?.map(hint => (
-                    <li
+                    <ListItem
                         key={hint.title}
                         onClick={() => onHintClickHandler(hint)}
-                        style={{ cursor: 'pointer' }}
+                        sx={styles.listItem}
                     >
-                        <HighlightedText text={hint.title} highlight={searchValue} />
-                    </li>
+                        <Typography variant="subtitle1">
+                            <HighlightedText text={hint.title} highlight={searchValue} />
+                        </Typography>
+                    </ListItem>
                 ))}
-            </ul>
-        </div>
+            </List>
+        </Box>
     );
 };
 

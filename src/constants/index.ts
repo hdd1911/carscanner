@@ -1,3 +1,6 @@
+export const LOCALE = 'ru-RU';
+export const CURRENCY = 'RUB';
+
 export const DEFAULT_SEARCH_DEBOUNCE = 500;
 export const ITEMS_PER_PAGE = 10;
 

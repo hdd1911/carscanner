@@ -1,9 +1,13 @@
 import React from 'react';
 
-import { ITEMS_PER_PAGE } from '../constants';
+import { Box, List, ListItem, Typography } from '@mui/material';
+
+import { CURRENCY, ITEMS_PER_PAGE, LOCALE } from '../constants';
 import useIntersection from '../hooks/intersection';
 import { useAppSelector } from '../hooks/store';
-import { Car, useLazyGetCarsQuery } from '../services/searcher';
+import { useLazyGetCarsQuery } from '../services/searcher';
+import { Car } from '../services/searcher.models';
+import { styles } from './InfiniteList.styles';
 
 const InfiniteList: React.FC = () => {
     const { selectedModel } = useAppSelector(state => state.app);
@@ -50,24 +54,23 @@ const InfiniteList: React.FC = () => {
     }, [isVisible, loadMore]);
 
     return (
-        <div
-            style={{
-                height: 300,
-                width: 'auto',
-                border: '1px solid blue',
-                marginTop: 10,
-                overflowY: 'scroll',
-            }}
-        >
-            <ul>
+        <Box sx={styles.containerBox} style={{ overflowY: list.length > 9 ? 'scroll' : 'auto' }}>
+            <List>
                 {list?.map((item: Car) => (
-                    <li key={item.id} style={{ minHeight: 40 }}>
-                        {item.title} {item.price}
-                    </li>
+                    <ListItem key={item.id} sx={styles.listItem}>
+                        <Typography variant="subtitle1">{item.title}</Typography>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                            {new Intl.NumberFormat(LOCALE, {
+                                style: 'currency',
+                                currency: CURRENCY,
+                                maximumFractionDigits: 0,
+                            }).format(item.price)}
+                        </Typography>
+                    </ListItem>
                 ))}
-            </ul>
+            </List>
             {!listCompleted && <div ref={bottomRef}></div>}
-        </div>
+        </Box>
     );
 };
 

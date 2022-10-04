@@ -1,21 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface AppState {
-    searchValue: string;
-    searchHistory: HistoryItem[];
-    selectedModel: SelectedModel | null;
-}
-
-export interface SelectedModel {
-    id: number;
-}
-
-export interface HistoryItem {
-    title: string;
-}
+import { AppState, HistoryItem, SelectedModel } from './appSlice.models';
 
 export const initialState: AppState = {
     searchValue: '',
+    searchPlaceholder: '',
+    hintsVisible: false,
     searchHistory: [],
     selectedModel: null,
 };
@@ -26,6 +16,12 @@ export const appSlice = createSlice({
     reducers: {
         setSearchValue(state, action: PayloadAction<AppState['searchValue']>) {
             state.searchValue = action.payload;
+        },
+        setSearchPlaceholder(state, action: PayloadAction<AppState['searchPlaceholder']>) {
+            state.searchPlaceholder = action.payload;
+        },
+        setHintsVisible(state, action: PayloadAction<AppState['hintsVisible']>) {
+            state.hintsVisible = action.payload;
         },
         addHistoryItem(state, action: PayloadAction<HistoryItem>) {
             const history = state.searchHistory;
