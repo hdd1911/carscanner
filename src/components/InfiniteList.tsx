@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Box, List, ListItem, Typography } from '@mui/material';
+import { Box, ListItem, Typography } from '@mui/material';
+import { Virtuoso } from 'react-virtuoso';
 
 import { CURRENCY, ITEMS_PER_PAGE, LOCALE } from '../constants';
 import useIntersection from '../hooks/intersection';
@@ -11,15 +12,13 @@ import { styles } from './InfiniteList.styles';
 
 const InfiniteList: React.FC = () => {
     const { selectedModel } = useAppSelector(state => state.app);
-    const [getCars, { data }] = useLazyGetCarsQuery();
+    const [getCars, { data, isFetching }] = useLazyGetCarsQuery();
 
     const [list, setList] = React.useState<Car[]>([]);
     const [listCompleted, setListCompleted] = React.useState<boolean>(true);
 
     const pageRef = React.useRef<number>(0);
-
-    const bottomRef = React.useRef<HTMLDivElement | null>(null);
-    const isVisible = useIntersection(bottomRef);
+    const scrollingStateRef = React.useRef<boolean>(false);
 
     const loadMore = React.useCallback(async () => {
         pageRef.current += 1;
@@ -30,7 +29,7 @@ const InfiniteList: React.FC = () => {
         });
         const extraItems = response.data?.results;
         if (extraItems) setList(prevState => [...prevState, ...extraItems]);
-    }, [getCars, selectedModel]);
+    }, [getCars, selectedModel?.id]);
 
     React.useEffect(() => {
         if (selectedModel) {
@@ -38,7 +37,10 @@ const InfiniteList: React.FC = () => {
             pageRef.current = 0;
             setListCompleted(false);
         }
-    }, [selectedModel]);
+        if (pageRef.current === 0) {
+            loadMore();
+        }
+    }, [loadMore, selectedModel]);
 
     React.useEffect(() => {
         const totalItems = data?.total;
@@ -49,27 +51,38 @@ const InfiniteList: React.FC = () => {
         }
     }, [data]);
 
-    React.useEffect(() => {
-        if (isVisible) loadMore();
-    }, [isVisible, loadMore]);
+    const Footer: React.FC = () => {
+        const bottomRef = React.useRef<HTMLDivElement | null>(null);
+        const isVisible = useIntersection(bottomRef);
+
+        React.useEffect(() => {
+            if (!isFetching && isVisible && !listCompleted && scrollingStateRef.current) {
+                loadMore();
+            }
+        }, [isVisible]);
+
+        return <div ref={bottomRef}></div>;
+    };
 
     return (
-        <Box sx={styles.containerBox} style={{ overflowY: list.length > 9 ? 'scroll' : 'auto' }}>
-            <List>
-                {list?.map((item: Car) => (
-                    <ListItem key={item.id} sx={styles.listItem}>
-                        <Typography variant="subtitle1">{item.title}</Typography>
+        <Box sx={styles.containerBox}>
+            <Virtuoso
+                isScrolling={isScrolling => (scrollingStateRef.current = isScrolling)}
+                data={list}
+                itemContent={index => (
+                    <ListItem key={list[index].id} sx={styles.listItem}>
+                        <Typography variant="subtitle1">{list[index].title}</Typography>
                         <Typography variant="subtitle1" fontWeight="bold">
                             {new Intl.NumberFormat(LOCALE, {
                                 style: 'currency',
                                 currency: CURRENCY,
                                 maximumFractionDigits: 0,
-                            }).format(item.price)}
+                            }).format(list[index].price)}
                         </Typography>
                     </ListItem>
-                ))}
-            </List>
-            {!listCompleted && <div ref={bottomRef}></div>}
+                )}
+                components={{ Footer }}
+            />
         </Box>
     );
 };
