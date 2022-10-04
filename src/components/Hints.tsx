@@ -15,16 +15,19 @@ const Hints: React.FC = () => {
     const dispatch = useDispatch();
     const debounsed = useDebounce(searchValue);
 
-    const onHintClickHandler = (hint: Hint) => {
-        addHistoryItem({ title: hint.title });
+    const onHintClickHandler = React.useCallback(
+        (hint: Hint) => {
+            addHistoryItem({ title: hint.title });
 
-        if (hint.model_id === 0) {
-            setSearchValue(hint.title);
-            suggestHints({ text: hint.title }); // мб нужно будет убрать
-        } else {
-            setSelectedModel({ id: hint.model_id });
-        }
-    };
+            if (hint.model_id === 0) {
+                setSearchValue(hint.title);
+                suggestHints({ text: hint.title }); // мб нужно будет убрать
+            } else {
+                setSelectedModel({ id: hint.model_id });
+            }
+        },
+        [addHistoryItem, setSearchValue, setSelectedModel, suggestHints],
+    );
 
     React.useEffect(() => {
         if (debounsed) {

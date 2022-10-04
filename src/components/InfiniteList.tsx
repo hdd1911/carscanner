@@ -7,7 +7,7 @@ import { Car, useLazyGetCarsQuery } from '../services/searcher';
 
 const InfiniteList: React.FC = () => {
     const { selectedModel } = useAppSelector(state => state.app);
-    const [getCars, { data, isFetching }] = useLazyGetCarsQuery();
+    const [getCars, { data }] = useLazyGetCarsQuery();
 
     const [list, setList] = React.useState<Car[]>([]);
     const [listCompleted, setListCompleted] = React.useState<boolean>(true);
@@ -33,9 +33,8 @@ const InfiniteList: React.FC = () => {
             setList([]);
             pageRef.current = 0;
             setListCompleted(false);
-            loadMore();
         }
-    }, [loadMore, selectedModel]);
+    }, [selectedModel]);
 
     React.useEffect(() => {
         const totalItems = data?.total;
@@ -67,7 +66,7 @@ const InfiniteList: React.FC = () => {
                     </li>
                 ))}
             </ul>
-            {!listCompleted && !isFetching && <div ref={bottomRef}></div>}
+            {!listCompleted && <div ref={bottomRef}></div>}
         </div>
     );
 };

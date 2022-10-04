@@ -1,20 +1,20 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface AppState {
+export interface AppState {
     searchValue: string;
     searchHistory: HistoryItem[];
     selectedModel: SelectedModel | null;
 }
 
-interface SelectedModel {
+export interface SelectedModel {
     id: number;
 }
 
-interface HistoryItem {
+export interface HistoryItem {
     title: string;
 }
 
-const initialState: AppState = {
+export const initialState: AppState = {
     searchValue: '',
     searchHistory: [],
     selectedModel: null,
